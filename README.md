@@ -1,110 +1,125 @@
-Soil Quality Predictor
-Project Overview
-This project is a web-based application that uses a machine learning model to predict the most suitable crop for a given set of soil and environmental conditions. The application provides a user-friendly interface where a user can input various parameters such as Nitrogen, Phosphorus, and Potassium levels, as well as temperature, humidity, pH, and rainfall.
+🌾 Soil Quality Prediction and Crop Recommendation System 🧪
+A data-driven web application that predicts the most suitable crop for a given set of soil and environmental conditions, providing farmers (or users) with an optimal recommendation and a soil quality confidence score.
 
-The web interface is built with HTML and styled using Tailwind CSS. The backend is a Flask application that serves the HTML pages, processes user input, and interacts with the trained machine learning model to provide a crop recommendation and a soil quality score.
+This project demonstrates a complete Data Science lifecycle, from data preprocessing and model training to full-stack deployment (Flask and HTML/CSS).
 
-Features
-Interactive Interface: A simple and intuitive user interface with smooth scrolling between sections.
+🎯 Project Goal
+To build a highly accurate machine learning model that takes seven key soil and environmental parameters as input and predicts the ideal crop to maximize yield and resource efficiency.
 
-Data-Driven Predictions: A machine learning model, trained on the Crop_recommendation.csv dataset, provides accurate crop recommendations.
+✨ Key Features
+Data-Driven Predictions: Uses a Random Forest Classifier trained on the Crop_recommendation.csv dataset.
 
-Soil Quality Score: The application provides a confidence score (from 1 to 100) for the prediction, indicating the quality of the soil for the recommended crop.
+Soil Quality Score: Provides a confidence score (model probability) for the recommendation, indicating the suitability of the soil for the predicted crop.
 
-Dynamic Visuals: Displays an image of the recommended crop on the results page.
+Full-Stack Application: Built using a Flask backend for API handling and a modern, responsive HTML/Tailwind CSS frontend.
 
-Team Showcase: A dedicated section to highlight the project's development team.
+Deployment Ready: Configured with gunicorn and Procfile for easy continuous deployment on platforms like Render or Heroku.
 
-Getting Started
-To get this application up and running on your local machine, follow these steps.
+💻 Tech Stack
+Component
 
-Prerequisites
-You will need the following installed on your system:
+Technology
 
-Python 3.x
+Role
 
-Pip (Python's package installer)
+Backend
 
-File Structure
-Ensure your project directory is organized as follows:
+Python 3.x, Flask
 
-soil_predictor/
-├── app.py
-├── crop_model.pkl
-├── scaler.pkl
-├── Crop_recommendation.csv
-├── templates/
-│   └── index.html
-└── static/
-    └── images/
-        ├── ameya.jpeg
-        ├── anu.jpeg
-        ├── cherian.jpeg
-        ├── gowri.jpeg
-        ├── apple.jpeg
-        ├── banana.jpeg
-        ├── blackgram.jpeg
-        ├── carrot.png
-        ├── chickpea.jpeg
-        ├── chickpea.png
-        ├── coconut.jpeg
-        ├── coffee.jpeg
-        ├── corn.png
-        ├── cotton.jpeg
-        ├── grapes.jpeg
-        ├── jute.jpeg
-        ├── kidneybeans.jpg
-        ├── lentil.jpeg
-        ├── maize.jpeg
-        ├── mango.jpg
-        ├── mothbeans.jpeg
-        ├── mungbean.jpeg
-        ├── muskmelon.jpeg
-        ├── orange.jpeg
-        ├── papaya.jpeg
-        ├── pigeonpeas.jpeg
-        ├── pomegranate.jpeg
-        ├── rice.jpeg
-        ├── soyabean.png
-        ├── tomato.png
-        ├── watermelon.jpeg
-        └── wheat.png
+Web server, API endpoint for predictions
 
-Installation
-Clone the repository or create the project structure manually.
+Machine Learning
 
-Install the required Python packages.
-Create a requirements.txt file and add the following:
+Scikit-learn (RandomForestClassifier)
 
-Flask
-numpy
-scikit-learn
-pandas
+Core predictive model
 
-Then, run the following command in your terminal:
+Data Processing
 
+Pandas, NumPy, StandardScaler
+
+Data handling and feature scaling
+
+Model Persistence
+
+Joblib
+
+Saves and loads the trained model and scaler
+
+Frontend
+
+HTML5, Tailwind CSS, JavaScript
+
+User interface and making AJAX calls to the Flask API
+
+Deployment
+
+Gunicorn, Procfile
+
+Production web server and deployment instructions
+
+🛠️ Getting Started (Local Setup)
+To run this application on your local machine, follow these steps:
+
+1. Prerequisites
+You need Python 3.8+ installed on your system.
+
+2. Clone the Repository
+git clone [https://github.com/amkbitshift/SOIL-QUALITY-PREDICTION-AND-CROP-RECOMMENTATION.git](https://github.com/amkbitshift/SOIL-QUALITY-PREDICTION-AND-CROP-RECOMMENTATION.git)
+cd SOIL-QUALITY-PREDICTION-AND-CROP-RECOMMENTATION
+
+3. Install Dependencies
+It is highly recommended to use a virtual environment.
+
+# Create and activate environment (Example for Windows/PowerShell)
+python -m venv venv
+.\venv\Scripts\activate
+
+# Install required packages
 pip install -r requirements.txt
 
-Ensure the Model and Scaler are in place.
-The app.py file loads crop_model.pkl and scaler.pkl. These files should be placed in the main directory alongside app.py. The model was trained on the provided Crop_recommendation.csv dataset.
+4. Ensure Model Files are Present
+This application requires the following two trained files, which must be in the main project directory:
 
-Running the Application
-To start the web server, navigate to your project's root directory in the terminal and run:
+crop_model.joblib
+
+scaler.joblib
+
+Note: These files are generated by running the Google Colab notebook (colab_model_training.ipynb) and are necessary for the application to start.
+
+5. Run the Application
+Start the Flask web server from your terminal:
 
 python app.py
 
-The application will start running on your local machine, typically at http://127.0.0.1:5000. Open this URL in your web browser to use the application.
+The application will start running at http://127.0.0.1:5000. Open this URL in your browser to interact with the predictor.
 
-Usage
-Open the application in your browser. The landing page provides a brief overview of the tool.
+⚙️ Data Pipeline and Model Details
+Dataset
+Source: Crop_recommendation.csv
 
-Click "BEGIN ANALYSIS" to navigate to the input page.
+Features (Inputs): Nitrogen (N), Phosphorus (P), Potassium (K), Temperature, Humidity, pH, and Rainfall.
 
-Enter the soil and environmental data in the provided fields. The input fields have clear labels and expected value ranges.
+Target (Output): label (Crop name, e.g., 'rice', 'maize', 'coffee').
 
-Click "ANALYZE SOIL DATA". The page will scroll to the results section, displaying the recommended crop and a soil quality score.
+Data Preprocessing
+The notebook systematically performs the following steps, which are crucial for model performance:
 
-Click "RESTART ANALYSIS" to clear the form and return to the main page for a new prediction.
+Exploratory Data Analysis (EDA): Checking data types, unique values, and statistical summaries.
 
-Dataset and Model
-The model is a RandomForestClassifier trained on the Crop_recommendation.csv dataset. The features used for training are N, P, K, temperature, humidity, pH, and rainfall. A StandardScaler was used to preprocess the data before training.
+Missing Value Treatment: Checked for and confirmed no missing values (using .dropna()).
+
+Duplicate Removal: Verified and removed any duplicate rows to maintain data integrity.
+
+Outlier Detection: Used statistical methods (e.g., box plots) to verify the data quality.
+
+Feature Scaling / Normalization: Used StandardScaler to normalize input features, ensuring the model is not biased by large differences in feature magnitudes (e.g., Rainfall vs. pH).
+
+Model Performance
+Algorithm: RandomForestClassifier
+
+Metrics: Achieved high accuracy on the test set, demonstrating strong generalization capability for crop prediction.
+
+🚀 Deployment (Live Link)
+
+[LINK TO YOUR LIVE APP HERE](https://amkbitshift.github.io/SOIL-QUALITY-PREDICTION-AND-CROP-RECOMMENTATION/)
