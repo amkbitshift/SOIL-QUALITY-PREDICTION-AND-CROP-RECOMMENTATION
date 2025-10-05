@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soil Quality Predictor & Crop recommentation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        
+        .mono-font {
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+        }
+        :root {
+            --color-lightest: #e8e8e8;
+            --color-light: #b7b7b7;
+            --color-medium: #8c8c8c;
+            --color-dark: #525252;
+            --color-darkest: #000000;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        .page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Pie Chart Styles */
+        .pie-chart {
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            animation: rotate 20s linear infinite;
+        }
+
+        .pie-slice {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            transform-origin: 100% 100%;
+        }
+
+        .pie-slice:nth-child(1) { 
+            background: linear-gradient(45deg, var(--color-medium), var(--color-light));
+            transform: rotate(0deg);
+        }
+        .pie-slice:nth-child(2) { 
+            background: linear-gradient(45deg, var(--color-dark), var(--color-medium));
+            transform: rotate(60deg);
+        }
+        .pie-slice:nth-child(3) { 
+            background: linear-gradient(45deg, var(--color-darkest), var(--color-dark));
+            transform: rotate(120deg);
+        }
+        .pie-slice:nth-child(4) { 
+            background: linear-gradient(45deg, var(--color-light), var(--color-lightest));
+            transform: rotate(180deg);
+        }
+        .pie-slice:nth-child(5) { 
+            background: linear-gradient(45deg, var(--color-medium), var(--color-dark));
+            transform: rotate(240deg);
+        }
+        .pie-slice:nth-child(6) { 
+            background: linear-gradient(45deg, var(--color-dark), var(--color-darkest));
+            transform: rotate(300deg);
+        }
+
+        .crop-icon {
+            position: absolute;
+            font-size: 2rem;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Speedometer Input Styles */
+        .speedometer-input {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            border: 6px solid var(--color-light);
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--color-darkest);
+            background: linear-gradient(135deg, var(--color-lightest), #ffffff);
+            transition: all 0.4s ease;
+            position: relative;
+            box-shadow: 
+                inset 0 0 20px rgba(0,0,0,0.1),
+                0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .speedometer-input::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            border-radius: 50%;
+            background: conic-gradient(
+                from 0deg,
+                var(--color-light) 0deg,
+                var(--color-medium) 90deg,
+                var(--color-dark) 180deg,
+                var(--color-medium) 270deg,
+                var(--color-light) 360deg
+            );
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .speedometer-input:hover {
+            transform: scale(1.1);
+            border-color: var(--color-dark);
+            box-shadow: 
+                inset 0 0 30px rgba(0,0,0,0.15),
+                0 0 40px rgba(82,82,82,0.4),
+                0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .speedometer-input:hover::before {
+            opacity: 1;
+        }
+
+        .speedometer-input:focus {
+            outline: none;
+            border-color: var(--color-darkest);
+            box-shadow: 
+                inset 0 0 30px rgba(0,0,0,0.2),
+                0 0 50px rgba(0,0,0,0.5),
+                0 8px 25px rgba(0,0,0,0.4);
+        }
+
+        .speedometer-input:focus::before {
+            opacity: 1;
+        }
+
+        /* Professional styling */
+        .professional-card {
+            background: linear-gradient(135deg, var(--color-lightest), #ffffff);
+            border: 2px solid var(--color-light);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        .professional-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+        }
+
+        .nav-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--color-light);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid var(--color-medium);
+        }
+
+        .nav-dot.active {
+            background: var(--color-darkest);
+            transform: scale(1.3);
+            box-shadow: 0 0 15px rgba(0,0,0,0.3);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, var(--color-darkest), var(--color-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            line-height: 0.9;
+        }
+        
+        .professional-heading {
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            line-height: 1.1;
+        }
+        
+        .body-text {
+            font-weight: 400;
+            line-height: 1.6;
+            letter-spacing: 0.01em;
+        }
+        
+        .label-text {
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+        }
+
+        .professional-btn {
+            background: linear-gradient(135deg, var(--color-dark), var(--color-darkest));
+            color: white;
+            border: 2px solid var(--color-medium);
+            transition: all 0.3s ease;
+        }
+
+        .professional-btn:hover {
+            background: linear-gradient(135deg, var(--color-darkest), var(--color-dark));
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+                
+        .soil-quality-circle {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            background: conic-gradient(var(--color-dark) 0deg, var(--color-lightest) 0deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--color-darkest);
+            margin: 20px auto;
+            position: relative;
+        }
+        .soil-quality-circle span {
+            position: absolute;
+        }
+
+        /* Smooth fill transition */
+        @keyframes fillGauge {
+            from { background: conic-gradient(var(--color-dark) 0deg, var(--color-lightest) 0deg); }
+        }
+
+    </style>
+</head>
+<body style="background: linear-gradient(135deg, #e8e8e8, #ffffff);">
+    <!-- Navigation Dots -->
+    <div class="fixed right-6 top-1/2 transform -translate-y-1/2 z-50 flex flex-col space-y-4">
+        <div class="nav-dot active" onclick="scrollToPage(1)"></div>
+        <div class="nav-dot" onclick="scrollToPage(2)"></div>
+        <div class="nav-dot" onclick="scrollToPage(3)"></div>
+        <div class="nav-dot" onclick="scrollToPage(4)"></div>
+    </div>
+
+    <!-- Page 1: Title and Pie Chart -->
+    <section id="page1" class="page" style="background: linear-gradient(135deg, #e8e8e8, #ffffff);">
+        <div class="w-full max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <!-- Left Side - Title -->
+            <div class="text-left">
+                <h1 class="text-6xl md:text-7xl gradient-text mb-8">
+                    SOIL<br>
+                    <span style="color: #525252; font-weight: 700;">QUALITY</span><br>
+                    <span style="color: #8c8c8c; font-weight: 600;">PREDICTOR</span>
+                     <span style="color: #525252; font-weight: 700;">& CROP</span><br>
+                    <span style="color: #8c8c8c; font-weight: 600;">RECOMMENTOR</span>
+                </h1>
+                <p class="text-lg md:text-xl mb-10 body-text" style="color: #525252; max-width: 500px;">
+                    Advanced agricultural intelligence system for precision farming. 
+                    Analyze soil parameters and optimize crop selection with data-driven insights.
+                </p>
+                <button onclick="scrollToPage(2)" class="professional-btn px-10 py-3 rounded-full text-lg font-semibold shadow-lg tracking-wide">
+                    BEGIN ANALYSIS →
+                </button>
+            </div>
+            
+            <!-- Right Side - Pie Chart -->
+            <div class="flex justify-center">
+                <div class="relative">
+                    <div class="pie-chart shadow-2xl">
+                        <div class="pie-slice">
+                            <div class="crop-icon"><img src="static/images/wheat.png" alt="wheat"></div>
+                        </div>
+                        <div class="pie-slice">
+                            <div class="crop-icon"><img src="static/images/corn.png" alt="corn"></div>
+                        </div>
+                        <div class="pie-slice">
+                            <div class="crop-icon"><img src="static/images/tomato.png" alt="tomato"></div>
+                        </div>
+                        <div class="pie-slice">
+                            <div class="crop-icon"><img src="static/images/soyabean.png" alt="soyabean"></div>
+                        </div>
+                        <div class="pie-slice">
+                            <div class="crop-icon"><img src="static/images/chickpea.png" alt="chickpea"></div>
+                        </div>
+                        <div class="pie-slice">
+                            <div class="crop-icon"><img src="static/images/carrot.png" alt="carrot"></div>
+                        </div>
+                    </div>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <div class="w-32 h-32 rounded-full flex items-center justify-center text-2xl font-bold" 
+                             style="background: linear-gradient(135deg, #ffffff, #e8e8e8); color: #000000; box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
+                            CROPS
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Page 2: Speedometer Inputs -->
+    <section id="page2" class="page" style="background: linear-gradient(135deg, #ffffff, #e8e8e8);">
+        <div class="text-center px-6 max-w-7xl w-full">
+            <h2 class="text-4xl md:text-5xl professional-heading mb-16 gradient-text">SOIL PARAMETER ANALYSIS</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-12 mb-16">
+                <div class="flex flex-col items-center">
+                    <label class="label-text mb-6" style="color: #525252;">Nitrogen (N)</label>
+                    <input type="number" id="nitrogen" class="speedometer-input mono-font" placeholder="mg/kg" min="0" max="150">
+                    <span class="text-xs mt-3 mono-font" style="color: #8c8c8c;">0-150 mg/kg</span>
+                </div>
+
+                <div class="flex flex-col items-center">
+                    <label class="label-text mb-6" style="color: #525252;">Phosphorus (P)</label>
+                    <input type="number" id="phosphorus" class="speedometer-input mono-font" placeholder="mg/kg" min="0" max="150">
+                    <span class="text-xs mt-3 mono-font" style="color: #8c8c8c;">0-150 mg/kg</span>
+                </div>
+
+                <div class="flex flex-col items-center">
+                    <label class="label-text mb-6" style="color: #525252;">Potassium (K)</label>
+                    <input type="number" id="potassium" class="speedometer-input mono-font" placeholder="mg/kg" min="0" max="210">
+                    <span class="text-xs mt-3 mono-font" style="color: #8c8c8c;">0-210 mg/kg</span>
+                </div>
+
+                <div class="flex flex-col items-center">
+                    <label class="label-text mb-6" style="color: #525252;">Temperature</label>
+                    <input type="number" id="temperature" class="speedometer-input mono-font" placeholder="°C" min="5" max="45">
+                    <span class="text-xs mt-3 mono-font" style="color: #8c8c8c;">5 to 45°C</span>
+                </div>
+
+                <div class="flex flex-col items-center">
+                    <label class="label-text mb-6" style="color: #525252;">Humidity</label>
+                    <input type="number" id="humidity" class="speedometer-input mono-font" placeholder="%" min="10" max="100">
+                    <span class="text-xs mt-3 mono-font" style="color: #8c8c8c;">10-100%</span>
+                </div>
+
+                <div class="flex flex-col items-center">
+                    <label class="label-text mb-6" style="color: #525252;">pH Level</label>
+                    <input type="number" id="ph" class="speedometer-input mono-font" placeholder="pH" min="3" max="10" step="0.1">
+                    <span class="text-xs mt-3 mono-font" style="color: #8c8c8c;">3-10 pH</span>
+                </div>
+
+                <div class="flex flex-col items-center">
+                    <label class="label-text mb-6" style="color: #525252;">Rainfall</label>
+                    <input type="number" id="rainfall" class="speedometer-input mono-font" placeholder="mm" min="0" max="300">
+                    <span class="text-xs mt-3 mono-font" style="color: #8c8c8c;">0-300 mm</span>
+                </div>
+
+            </div>
+            
+            <button onclick="analyzeSoil()" class="professional-btn px-12 py-4 rounded-full text-lg font-semibold shadow-xl tracking-wide">
+                ANALYZE SOIL DATA
+            </button>
+        </div>
+    </section>
+
+    <!-- Page 3: Results -->
+    <section id="page3" class="page" style="background: linear-gradient(135deg, #e8e8e8, #ffffff);">
+        <div class="text-center px-6 max-w-7xl w-full">
+            <h2 class="text-4xl md:text-5xl professional-heading mb-12 gradient-text">ANALYSIS RESULTS</h2>
+            
+            <div id="soilQuality" class="mb-16">
+                <div class="professional-card rounded-3xl p-10 shadow-2xl transition-all duration-300">
+                    <h3 class="text-2xl professional-heading mb-6 label-text" style="color: #525252;">Soil Quality Assessment</h3>
+                    <div id="qualityResult" class="text-lg body-text" style="color: #8c8c8c;">
+                        Complete the soil parameter analysis to view results.
+                    </div>
+                </div>
+            </div>
+            
+            <div id="recommendedCrops">
+                <h3 class="text-3xl professional-heading mb-12 label-text" style="color: #525252;">Recommended Crops</h3>
+                <div id="cropsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Crops will be populated here -->
+                </div>
+            </div>
+            
+            <button onclick="scrollToPage(4)" class="mt-16 professional-btn px-12 py-4 rounded-full text-lg font-semibold shadow-xl tracking-wide">
+                VIEW CONCLUSION
+            </button>
+        </div>
+    </section>
+
+    <!-- Page 4: Conclusion and Team -->
+<section id="page4" class="page" style="background: linear-gradient(135deg, #ffffff, #e8e8e8);">
+        <div class="text-center px-6 max-w-7xl w-full">
+            <h2 class="text-4xl md:text-5xl professional-heading mb-16 gradient-text">PROJECT CONCLUSION</h2>
+            
+            <div class="professional-card rounded-3xl p-12 shadow-2xl mb-16 transition-all duration-300">
+                <h3 class="text-2xl professional-heading mb-8 label-text" style="color: #525252;">Executive Summary</h3>
+                <p class="text-lg body-text max-w-4xl mx-auto" style="color: #8c8c8c;">
+                    Our Soil Quality Predictor leverages advanced algorithms to provide precision agriculture insights. 
+                    By analyzing critical soil parameters, we enable farmers to make data-driven decisions that optimize 
+                    crop yield, reduce resource waste, and promote sustainable farming practices for the future.
+                </p>
+            </div>
+            
+            <h3 class="text-3xl professional-heading mb-12 label-text" style="color: #525252;">Development Team</h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-10">
+                <div class="professional-card rounded-3xl p-8 shadow-xl transition-all duration-300">
+                    <div class="w-28 h-28 rounded-full mx-auto mb-6 flex items-center justify-center text-5xl shadow-lg"
+                         style="background: linear-gradient(135deg, #b7b7b7, #e8e8e8);">
+                        <img src="static/images/12417014 AMEYA JOSE CHAZHOOR .JPG" alt="Ameya Jose Chazhoor" class="w-full h-full rounded-full object-cover">
+                    </div>
+                    <h4 class="text-xl font-semibold mb-2" style="color: #000000;">AMEYA JOSE CHAZHOOR</h4>
+                    <p style="color: #525252;" class="text-sm label-text">12417014</p>
+                </div>
+                
+                <div class="professional-card rounded-3xl p-8 shadow-xl transition-all duration-300">
+                    <div class="w-28 h-28 rounded-full mx-auto mb-6 flex items-center justify-center text-5xl shadow-lg"
+                         style="background: linear-gradient(135deg, #e8e8e8, #b7b7b7);">
+                        <img src="static/images/12417020 Anu V Nair .JPG" alt="Anu V Nair" class="w-full h-full rounded-full object-cover">
+                    </div>
+                    <h4 class="text-xl font-semibold mb-2" style="color: #000000;">ANU V NAIR</h4>
+                    <p style="color: #525252;" class="text-sm label-text">12417020</p>
+                </div>
+
+                <div class="professional-card rounded-3xl p-8 shadow-xl transition-all duration-300">
+                    <div class="w-28 h-28 rounded-full mx-auto mb-6 flex items-center justify-center text-5xl shadow-lg"
+                         style="background: linear-gradient(135deg, #8c8c8c, #b7b7b7);">
+                        <img src="static/images/12417034 Cherian Aby Elenjikal .JPG" alt="Cherian Aby Elenjikal" class="w-full h-full rounded-full object-cover">
+                    </div>
+                    <h4 class="text-xl font-semibold mb-2" style="color: #000000;">CHERIAN ABY ELENJIKAL</h4>
+                    <p style="color: #525252;" class="text-sm label-text">12417034</p>
+                </div>
+                
+                <div class="professional-card rounded-3xl p-8 shadow-xl transition-all duration-300">
+                    <div class="w-28 h-28 rounded-full mx-auto mb-6 flex items-center justify-center text-5xl shadow-lg"
+                         style="background: linear-gradient(135deg, #525252, #8c8c8c);">
+                        <img src="static/images/12417042 GOWRI SOORAJ.JPG" alt="Gowri Sooraj" class="w-full h-full rounded-full object-cover">
+                    </div>
+                    <h4 class="text-xl font-semibold mb-2" style="color: #000000;">GOWRI SOORAJ</h4>
+                    <p style="color: #525252;" class="text-sm label-text">12417042</p>
+                </div>
+
+                
+            </div>
+            
+            <button onclick="restartAnalysis()" class="mt-16 professional-btn px-12 py-4 rounded-full text-lg font-semibold shadow-xl tracking-wide">
+    RESTART ANALYSIS
+</button>
+        </div>
+    </section>
+
+    <script>
+    function scrollToPage(pageNumber) {
+        const page = document.getElementById(`page${pageNumber}`);
+        page.scrollIntoView({ behavior: 'smooth' });
+
+        // Update navigation dots
+        document.querySelectorAll('.nav-dot').forEach((dot, index) => {
+            dot.classList.toggle('active', index === pageNumber - 1);
+        });
+    }
+
+    function restartAnalysis() {
+        // Clear all input fields on the form
+        document.getElementById('nitrogen').value = '';
+        document.getElementById('phosphorus').value = '';
+        document.getElementById('potassium').value = '';
+        document.getElementById('temperature').value = '';
+        document.getElementById('humidity').value = '';
+        document.getElementById('ph').value = '';
+        document.getElementById('rainfall').value = '';
+
+        // Scroll back to the first page
+        scrollToPage(1);
+    }
+
+    async function analyzeSoil() {
+        const nitrogen = parseFloat(document.getElementById('nitrogen').value) || 0;
+        const phosphorus = parseFloat(document.getElementById('phosphorus').value) || 0;
+        const potassium = parseFloat(document.getElementById('potassium').value) || 0;
+        const temperature = parseFloat(document.getElementById('temperature').value) || 0;
+        const humidity = parseFloat(document.getElementById('humidity').value) || 0;
+        const ph = parseFloat(document.getElementById('ph').value) || 0;
+        const rainfall = parseFloat(document.getElementById('rainfall').value) || 0;
+
+        const response = await fetch("/predict", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ N: nitrogen, P: phosphorus, K: potassium, temperature, humidity, ph, rainfall })
+        });
+
+        const result = await response.json();
+
+        if (result.error) {
+            document.getElementById('qualityResult').innerHTML =
+                `<div style="color:red;">Error: ${result.error}</div>`;
+            return;
+        }
+
+        const crop = result.prediction;
+        const quality = result.quality || 85.0; // Fallback if backend doesn't provide confidence
+
+        document.getElementById('qualityResult').innerHTML = `
+            <div class="text-2xl font-bold mb-6" style="color:#000000;">
+                Predicted Crop: ${crop}
+            </div>
+            <div class="soil-quality-circle" id="soilGauge">
+                <span>${quality}%</span>
+            </div>
+            <div class="text-lg" style="color: #8c8c8c;">Soil Quality Score (1–100)</div>
+        `;
+
+        // Animate gauge fill
+        const gauge = document.getElementById('soilGauge');
+        gauge.style.background = `conic-gradient(var(--color-dark) ${quality * 3.6}deg, var(--color-lightest) ${quality * 3.6}deg)`;
+        
+        // Clear previous crop cards
+        document.getElementById('cropsGrid').innerHTML = '';
+
+        // Mapping for image extensions to handle different file types
+        const imageExtensions = {
+            'wheat': 'png', 'soyabean': 'png', 'tomato': 'png', 'corn': 'png', 'carrot': 'png', 'chickpea': 'png', // png crops
+            'kidneybeans': 'jpg', 'mango': 'jpg', // jpg crops
+            'apple': 'jpeg', 'banana': 'jpeg', 'blackgram': 'jpeg', 'coconut': 'jpeg', 'coffee': 'jpeg', 'cotton': 'jpeg',
+            'grapes': 'jpeg', 'jute': 'jpeg', 'lentil': 'jpeg', 'maize': 'jpeg', 'mothbeans': 'jpeg', 'mungbean': 'jpeg',
+            'muskmelon': 'jpeg', 'orange': 'jpeg', 'papaya': 'jpeg', 'pigeonpeas': 'jpeg', 'pomegranate': 'jpeg', 'rice': 'jpeg', 'maize': 'jpeg', 'watermelon': 'jpeg'
+        };
+
+        const cropLower = crop.toLowerCase();
+        const imageExtension = imageExtensions[cropLower] || 'png'; // Default to png if not in list
+
+        const cropCard = `
+            <div class="professional-card rounded-3xl p-8 shadow-xl transition-all duration-300">
+                <div class="mb-6 w-24 h-24 mx-auto">
+                    <img src="static/images/${cropLower}.${imageExtension}" alt="${crop}" class="w-full h-full object-contain">
+                </div>
+                <h4 class="text-xl font-semibold mb-4" style="color: #000000;">${crop}</h4>
+                <p style="color: #8c8c8c;" class="text-sm body-text">
+                    Recommended by ML model based on soil and environmental conditions.
+                </p>
+            </div>
+        `;
+        document.getElementById('cropsGrid').innerHTML = cropCard;
+
+        // Scroll to results ONLY after button click
+        setTimeout(() => scrollToPage(3), 200);
+    }
+
+    // Enhanced navigation dot updates
+    window.addEventListener('scroll', () => {
+        const pages = document.querySelectorAll('.page');
+        const scrollPosition = window.scrollY + window.innerHeight / 2;
+        
+        pages.forEach((page, index) => {
+            const pageTop = page.offsetTop;
+            const pageBottom = pageTop + page.offsetHeight;
+            
+            if (scrollPosition >= pageTop && scrollPosition < pageBottom) {
+                document.querySelectorAll('.nav-dot').forEach((dot, dotIndex) => {
+                    dot.classList.toggle('active', dotIndex === index);
+                });
+            }
+        });
+    });
+</script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97ab1aa7a4bc2fe1',t:'MTc1NzEzMTY5NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
