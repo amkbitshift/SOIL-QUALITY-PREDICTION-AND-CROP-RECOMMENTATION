@@ -122,4 +122,4 @@ Metrics: Achieved high accuracy on the test set, demonstrating strong generaliza
 
 🚀 Deployment (Live Link)
 
-[LINK TO YOUR LIVE APP HERE](https://amkbitshift.github.io/SOIL-QUALITY-PREDICTION-AND-CROP-RECOMMENTATION/)
+[LINK TO YOUR LIVE APP HERE](https://215c719fb45a.ngrok-free.app)
